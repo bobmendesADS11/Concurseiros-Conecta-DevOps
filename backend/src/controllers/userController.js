@@ -58,7 +58,7 @@ export const getAllUsers = async (req, res) => {
       select: { id_usuario: true, nome: true, email: true, data_cadastro: true, cidade: true, estado: true, preferencia: { select: { perfil_publico: true } } },
     });
     return res.status(200).json(users);
-  } catch (error) {
+  } catch {
     return res.status(500).json({ error: 'Erro ao buscar usuários' });
   }
 };
