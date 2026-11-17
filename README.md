@@ -4,7 +4,9 @@ Plataforma para concurseiros que viajam para fazer provas em outras cidades: pla
 
 **Versão:** `v3.0.0-n2` (entrega final da N2 — PMI III / ADS31, 13/11/2026) · Pipeline de CI/CD da **N3 de Ferramentas de Implantação Contínua (DevOps)**
 
-**Equipe:** Gabriel de Rezende Silva Scatolino, Moacyr Mendes de Oliveira Neto e Fernando Tolentino de Souza Hessmann Dutra.
+**Equipe do projeto (PMI III, N2):** Gabriel de Rezende Silva Scatolino, Moacyr Mendes de Oliveira Neto e Fernando Tolentino de Souza Hessmann Dutra. 
+
+**Equipe da N3 (Ferramentas de Implantação Contínua — DevOps):** Moacyr Mendes de Oliveira Neto, Bento Biral Foerster e Eduardo Varela.
 
 ## O que funciona nesta versão
 
@@ -97,7 +99,7 @@ cd backend
 npm test
 ```
 
-São 30 testes de integração (T01–T30), 12 testes de unidade em `tests/unit/` e 2 testes de interface com Selenium em `tests/e2e/`. Os de integração usam `node:test`, `supertest` e `socket.io-client`: cenários de sucesso e de falha de cadastro, login, perfil, privacidade, concursos (regressão da N1), viagens, conexões e chat em tempo real. Eles usam um banco separado, **`concurseiro_conecta_test`**, criado automaticamente pelo `prisma migrate deploy` se o usuário do PostgreSQL tiver permissão; senão, crie o banco vazio antes. Os dados de demonstração não são tocados.
+São 30 testes de integração (T01–T30), 15 testes de unidade em `tests/unit/` e 2 testes de interface com Selenium em `tests/e2e/`. Os de integração usam `node:test`, `supertest` e `socket.io-client`: cenários de sucesso e de falha de cadastro, login, perfil, privacidade, concursos (regressão da N1), viagens, conexões e chat em tempo real. Eles usam um banco separado, **`concurseiro_conecta_test`**, criado automaticamente pelo `prisma migrate deploy` se o usuário do PostgreSQL tiver permissão; senão, crie o banco vazio antes. Os dados de demonstração não são tocados.
 
 ## Documentação
 
