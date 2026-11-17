@@ -3,11 +3,11 @@
 
 const App = (() => {
 
-  // Se a página foi aberta pelo próprio servidor (http://localhost:3000) usa a mesma origem;
-  // se foi aberta como arquivo, aponta para o backend local.
-  // Usa a mesma origem só quando a página vem do próprio backend (porta 3000).
+  // Usa a mesma origem quando a página vem do próprio backend: porta 3000 (local)
+  // ou porta padrão 80/443 (servidor EC2 atrás do nginx).
   // Aberta pelo Live Server (ex.: 127.0.0.1:5500) ou como arquivo, aponta para o backend local.
-  const API = (location.protocol.startsWith('http') && location.port === '3000') ? location.origin : 'http://localhost:3000';
+  const mesmaOrigem = location.protocol.startsWith('http') && ['3000', ''].includes(location.port);
+  const API = mesmaOrigem ? location.origin : 'http://localhost:3000';
 
   const historico = [];
   let usuario = null;        // usuário logado (GET /api/me)
