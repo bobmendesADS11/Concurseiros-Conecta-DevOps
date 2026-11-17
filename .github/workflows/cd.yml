@@ -19,9 +19,6 @@ jobs:
     name: Deploy na instância EC2
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    environment:
-      name: producao
-      url: http://${{ secrets.EC2_HOST }}
     steps:
       - name: Configurar chave SSH
         run: |
