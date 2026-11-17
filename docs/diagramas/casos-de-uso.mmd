@@ -1,0 +1,16 @@
+flowchart LR
+  A((Concurseiro))
+  V((Visitante))
+  V --- UC1[UC01 Cadastrar conta - US01/RF01]
+  V --- UC2[UC02 Fazer login - US01/RF02]
+  V --- UC3[UC03 Redefinir senha - US01/RF02]
+  A --- UC4[UC04 Editar perfil, bio e foto - US02/US04/RF03]
+  A --- UC5[UC05 Configurar privacidade - US03/US08/RF04]
+  A --- UC6[UC06 Planejar viagem - US05/RF05]
+  A --- UC7[UC07 Gerenciar viagens - US06/RF06]
+  A --- UC8[UC08 Cadastrar e gerenciar concursos - N1]
+  A --- UC9[UC09 Listar e filtrar concurseiros - US07/US09/RF07/RF08]
+  A --- UC10[UC10 Solicitar e responder conexão - US10/RF09]
+  A --- UC11[UC11 Conversar no chat - RF10]
+  UC6 -. include .-> UC12[Verificar conflito de datas]
+  UC11 -. include .-> UC13[Validar conexão aceita]

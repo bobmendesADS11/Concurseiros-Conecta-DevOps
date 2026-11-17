@@ -1,0 +1,982 @@
+/* =====================================================
+   CONCURSEIROS CONECTA — STYLES.CSS
+   Layout: desktop exibe chassis iPhone 16
+   Toda a UI do app vive DENTRO do .iphone-screen
+   ===================================================== */
+
+/* ── Variáveis ── */
+:root {
+  --cor-principal:   #233D4D;
+  --cor-secundaria:  #215E61;
+  --cor-destaque:    #FE7F2D;
+  --cor-fundo:       #F5FBE6;
+  --cor-branco:      #FFFFFF;
+  --cor-texto:       #333333;
+  --cor-texto-claro: #666666;
+  --cor-borda:       #CCCCCC;
+
+  /* Chassis */
+  --phone-w:        375px;
+  --phone-h:        812px;
+  --phone-radius:   54px;
+  --screen-inset:   6px;
+  --screen-radius:  48px;
+  --nav-h:          74px;
+}
+
+/* ── Reset ── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+
+/* ═══════════════════════════════════════════════
+   DESKTOP BACKGROUND
+═══════════════════════════════════════════════ */
+.desktop-bg {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a2a35 0%, #0f1e28 50%, #162028 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+/* ═══════════════════════════════════════════════
+   CHASSIS — IPHONE 16
+═══════════════════════════════════════════════ */
+.iphone {
+  position: relative;
+  width: var(--phone-w);
+  height: var(--phone-h);
+  background: #1c1c1e;
+  border-radius: var(--phone-radius);
+  /* Anel externo + reflexo de borda */
+  box-shadow:
+    0 0 0 1px #3a3a3c,
+    0 0 0 3px #1c1c1e,
+    0 0 0 4px #48484a,
+    0 40px 100px rgba(0,0,0,0.7),
+    0 10px 30px rgba(0,0,0,0.5),
+    inset 0 0 0 1px #2c2c2e;
+  flex-shrink: 0;
+}
+
+/* Botões laterais físicos */
+.iphone-btn {
+  position: absolute;
+  background: #2c2c2e;
+  border-radius: 3px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.iphone-btn.mute     { width: 3px; height: 28px; left: -4px; top: 118px; border-radius: 3px 0 0 3px; }
+.iphone-btn.vol-up   { width: 3px; height: 42px; left: -4px; top: 158px; border-radius: 3px 0 0 3px; }
+.iphone-btn.vol-down { width: 3px; height: 42px; left: -4px; top: 210px; border-radius: 3px 0 0 3px; }
+.iphone-btn.power    { width: 3px; height: 72px; right: -4px; top: 168px; border-radius: 0 3px 3px 0; }
+
+/* ── Tela (área OLED) ── */
+.iphone-screen {
+  position: absolute;
+  inset: var(--screen-inset);
+  background: var(--cor-fundo);
+  border-radius: var(--screen-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Dynamic Island ── */
+.dynamic-island {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 118px;
+  height: 34px;
+  background: #1c1c1e;
+  border-radius: 20px;
+  z-index: 200;
+}
+
+/* ── Status Bar ── */
+.status-bar {
+  height: 52px;
+  padding: 14px 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 100;
+  color: var(--cor-principal);
+}
+.status-time {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+}
+.status-icons {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--cor-principal);
+}
+.battery-icon {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.battery-fill {
+  width: 22px;
+  height: 11px;
+  border: 1.5px solid var(--cor-principal);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+.battery-fill::after {
+  content: '';
+  position: absolute;
+  inset: 1.5px;
+  right: 20%;
+  background: var(--cor-principal);
+  border-radius: 1px;
+}
+.battery-tip {
+  width: 2px;
+  height: 5px;
+  background: var(--cor-principal);
+  border-radius: 0 1px 1px 0;
+  opacity: 0.6;
+}
+
+/* ═══════════════════════════════════════════════
+   APP VIEWPORT — scroll interno
+═══════════════════════════════════════════════ */
+.app-viewport {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+  /* esconde scrollbar mas mantém funcional */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  position: relative;
+}
+.app-viewport::-webkit-scrollbar { display: none; }
+
+/* ═══════════════════════════════════════════════
+   SPA — CONTROLE DE TELAS
+═══════════════════════════════════════════════ */
+.tela           { display: none; }
+.tela.ativa     { display: block; }
+.tela-center    { display: none; }
+.tela-center.ativa { display: flex; }
+.tela-login     { display: none; }
+.tela-login.ativa  { display: flex; }
+
+/* ── Bottom Nav: visível apenas em telas com .tem-nav ── */
+.bottom-nav { display: none; }
+.tem-nav.ativa ~ * .bottom-nav,
+.tela.tem-nav.ativa + .bottom-nav { display: block; }
+
+/* Solução direta: JS controla via classe no footer */
+.bottom-nav.visivel { display: block !important; }
+
+/* ═══════════════════════════════════════════════
+   TIPOGRAFIA INTERNA
+═══════════════════════════════════════════════ */
+h1 { font-size: 1.4rem; font-weight: 600; color: var(--cor-principal); margin-bottom: 0.3rem; }
+h2 { font-size: 1.1rem; font-weight: 600; color: var(--cor-principal); margin-bottom: 0.5rem; }
+p  { font-size: 0.875rem; color: var(--cor-texto); margin-bottom: 0.5rem; line-height: 1.5; }
+strong { font-weight: 600; color: var(--cor-principal); }
+a  { text-decoration: none; color: inherit; }
+
+/* ═══════════════════════════════════════════════
+   LAYOUT INTERNO DAS TELAS
+═══════════════════════════════════════════════ */
+.tela-inner {
+  padding: 1rem 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Header de seção com título + subtítulo */
+.tela-header-bloco { margin-bottom: 0.25rem; }
+.tela-header-bloco h1 { margin-bottom: 0.1rem; }
+.tela-header-bloco p  { color: var(--cor-secundaria); font-size: 0.82rem; margin: 0; }
+
+.tela-top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+.tela-top-row .tela-titulo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--cor-principal);
+  margin: 0;
+}
+.tela-top-row .tela-sub {
+  font-size: 0.8rem;
+  color: var(--cor-secundaria);
+  margin: 0;
+}
+
+.tela-header-centered {
+  text-align: center;
+}
+.tela-header-centered .tela-titulo {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--cor-principal);
+  margin-bottom: 0.25rem;
+}
+.tela-header-centered .tela-sub {
+  font-size: 0.85rem;
+  color: var(--cor-secundaria);
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--cor-branco);
+  border-radius: 14px;
+  padding: 1rem;
+  border: 0.5px solid var(--cor-borda);
+}
+.card h2 { margin-bottom: 0.6rem; }
+.card-label {
+  font-weight: 600;
+  color: var(--cor-principal);
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+.card-itens {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.card-itens p { margin: 0; font-size: 0.82rem; }
+.card-item {
+  background: var(--cor-fundo);
+  padding: 0.65rem 0.75rem;
+  border-radius: 10px;
+  margin-bottom: 0.5rem;
+}
+.card-item:last-child { margin-bottom: 0; }
+.card-item p { margin-bottom: 0.2rem; font-size: 0.82rem; }
+.card-item p:last-child { margin-bottom: 0; }
+
+/* ═══════════════════════════════════════════════
+   FORMULÁRIOS
+═══════════════════════════════════════════════ */
+label {
+  display: block;
+  font-weight: 500;
+  font-size: 0.82rem;
+  color: var(--cor-principal);
+  margin-bottom: 0.3rem;
+}
+input[type="email"],
+input[type="password"],
+input[type="text"],
+input[type="date"],
+input[type="search"],
+input[type="url"] {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 10px;
+  background: var(--cor-branco);
+  font-size: 0.875rem;
+  color: var(--cor-texto);
+  transition: border-color 0.2s;
+}
+input:focus { outline: none; border-color: var(--cor-destaque); }
+input::placeholder { color: var(--cor-texto-claro); opacity: 0.7; }
+input[type="radio"] { margin-right: 0.4rem; accent-color: var(--cor-destaque); }
+
+.campo-grupo { display: flex; flex-direction: column; gap: 0.3rem; margin-bottom: 1rem; }
+
+/* ═══════════════════════════════════════════════
+   BOTÕES
+═══════════════════════════════════════════════ */
+button {
+  padding: 0.65rem 1.25rem;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--cor-destaque);
+  color: var(--cor-branco);
+  transition: opacity 0.15s, transform 0.1s;
+  width: 100%;
+}
+button:active { opacity: 0.85; transform: scale(0.98); }
+
+.btn-sec {
+  background: var(--cor-secundaria);
+  color: var(--cor-branco);
+}
+.btn-voltar {
+  background: transparent;
+  color: var(--cor-principal);
+  font-size: 1.3rem;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.btn-voltar:active { background: rgba(35,61,77,0.1); transform: none; }
+.btn-sm {
+  width: auto;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.76rem;
+  border-radius: 8px;
+  display: inline-block;
+}
+.btn-center { text-align: center; }
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.login-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.editar-btn { background: var(--cor-destaque); }
+.editar-perfil { background: var(--cor-destaque); }
+.logout-btn { background: var(--cor-destaque); width: 100%; }
+
+/* ═══════════════════════════════════════════════
+   TELA LOGIN
+═══════════════════════════════════════════════ */
+.tela-login {
+  flex-direction: column;
+  justify-content: center;
+  padding: 2rem 1.5rem;
+  gap: 0.9rem;
+  min-height: calc(var(--phone-h) - 52px - var(--nav-h));
+}
+.login-header { text-align: center; margin-bottom: 0.5rem; }
+.login-brand {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--cor-principal);
+  margin-bottom: 0.3rem;
+}
+.login-sub { font-size: 0.875rem; color: var(--cor-secundaria); }
+
+/* ═══════════════════════════════════════════════
+   TELA CONFIRMAÇÃO
+═══════════════════════════════════════════════ */
+.tela-center {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(var(--phone-h) - 52px);
+  padding: 2rem 1.5rem;
+}
+.confirmacao-box { width: 100%; }
+.confirmacao-card {
+  background: var(--cor-branco);
+  border-radius: 14px;
+  padding: 1.5rem;
+  border: 0.5px solid var(--cor-borda);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+.confirmacao-icone { font-size: 3rem; margin-bottom: 0.75rem; }
+.confirmacao-titulo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--cor-principal);
+  margin-bottom: 0.75rem;
+}
+.confirmacao-texto {
+  font-size: 0.85rem;
+  color: var(--cor-texto-claro);
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+/* ═══════════════════════════════════════════════
+   BUSCAR
+═══════════════════════════════════════════════ */
+.area-pesquisa form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.resultados-sugestoes ul { list-style: none; }
+.resultados-sugestoes ul li {
+  padding: 0.6rem 0;
+  border-bottom: 0.5px solid var(--cor-borda);
+  font-size: 0.875rem;
+}
+.resultados-sugestoes ul li:last-child { border-bottom: none; }
+.resultados-sugestoes ul li a { color: var(--cor-secundaria); font-weight: 500; }
+
+/* ═══════════════════════════════════════════════
+   CONFIGURAÇÕES
+═══════════════════════════════════════════════ */
+.header-PERFIL {
+  background: var(--cor-branco);
+  border-radius: 14px;
+  border: 0.5px solid var(--cor-borda);
+  padding: 1rem;
+  text-align: center;
+}
+.avatar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+.avatar-circulo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 70px;
+  height: 70px;
+  background: var(--cor-secundaria);
+  color: var(--cor-branco);
+  border-radius: 50%;
+  font-size: 0.72rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.avatar-container .editar-btn {
+  width: auto;
+  padding: 0.3rem 0.75rem;
+  font-size: 0.76rem;
+}
+.info-usuario { margin-bottom: 0.5rem; }
+.nome-usuario { font-size: 1.1rem; color: var(--cor-principal); margin-bottom: 0.1rem; }
+.email-usuario { font-size: 0.78rem; color: var(--cor-texto-claro); margin: 0; }
+.editar-perfil { width: auto; padding: 0.4rem 1rem; font-size: 0.82rem; }
+
+.card-config {
+  background: var(--cor-branco);
+  border-radius: 14px;
+  border: 0.5px solid var(--cor-borda);
+  padding: 0.9rem 1rem;
+  margin-bottom: 0.75rem;
+}
+.card-titulo { font-size: 0.95rem; color: var(--cor-principal); margin-bottom: 0.5rem; }
+.lista-config { list-style: none; }
+.item-config {
+  padding: 0.6rem 0;
+  border-bottom: 0.5px solid var(--cor-borda);
+}
+.item-config:last-child { border-bottom: none; }
+.link-config {
+  display: block;
+  color: var(--cor-secundaria);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.link-text { display: block; }
+
+/* ═══════════════════════════════════════════════
+   PERFIL
+═══════════════════════════════════════════════ */
+.card p {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+}
+.card p:last-child { margin-bottom: 0; }
+.privacidade-opcao {
+  background: var(--cor-fundo);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.privacidade-opcao:last-child { margin-bottom: 0; }
+.privacidade-opcao label {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  color: var(--cor-principal);
+  margin-bottom: 0.2rem;
+}
+.privacidade-opcao p {
+  font-size: 0.78rem;
+  color: var(--cor-texto-claro);
+  margin: 0 0 0 1.3rem;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════
+   BOTTOM NAV (fixo DENTRO do iphone-screen)
+═══════════════════════════════════════════════ */
+.bottom-nav {
+  flex-shrink: 0;
+  background: var(--cor-principal);
+  padding: 0.5rem 0 0;
+}
+.nav-lista {
+  display: flex;
+  justify-content: space-around;
+  list-style: none;
+  padding: 0 0.25rem;
+}
+.nav-lista li { flex: 1; }
+.nav-lista button {
+  background: transparent;
+  color: rgba(255,255,255,0.65);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 0.4rem 0.25rem;
+  border-radius: 8px;
+  width: 100%;
+  transition: color 0.15s;
+}
+.nav-lista button:active { transform: none; }
+.nav-lista button.nav-ativo {
+  color: var(--cor-destaque);
+  font-weight: 700;
+}
+.home-indicator {
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.home-indicator::after {
+  content: '';
+  width: 100px;
+  height: 5px;
+  background: rgba(255,255,255,0.25);
+  border-radius: 3px;
+}
+
+/* ═══════════════════════════════════════════════
+   FORM VIAGEM
+═══════════════════════════════════════════════ */
+#form-viagem {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.busca-id {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: stretch;
+}
+
+.busca-id input {
+  flex: 1 1 75%;
+  min-width: 0;
+  height: 35px;
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid var(--cor-borda);
+}
+
+.busca-id .btn-sec {
+  flex: 0 0 auto;
+  height: 35px;
+  width: auto;
+  padding: 0 1.25rem;
+  margin: 0;
+}
+
+#btn-ver-todos,
+#btn-buscar-id {
+  background: var(--cor-destaque);
+}
+
+/* ═══════════════════════════════════════════════
+   CONCURSOS
+═══════════════════════════════════════════════ */
+.concurso-card {
+  background: var(--cor-branco);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  border: 0.5px solid var(--cor-borda);
+  margin-bottom: 0.75rem;
+}
+
+.concurso-card:last-child {
+  margin-bottom: 0;
+}
+
+.concurso-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--cor-principal);
+  margin-bottom: 0.5rem;
+}
+
+.concurso-card p {
+  font-size: 0.82rem;
+  color: var(--cor-texto);
+  margin-bottom: 0.25rem;
+  line-height: 1.4;
+}
+
+.concurso-card p:last-child {
+  margin-bottom: 0;
+}
+
+.concurso-card a {
+  color: var(--cor-secundaria);
+  text-decoration: underline;
+}
+
+.card-acoes {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.card-acoes button {
+  flex: 1 1 50%;
+  min-width: 0;
+  padding: 0.55rem 0.5rem;
+  font-size: 0.82rem;
+  border-radius: 8px;
+}
+
+.btn-editar {
+  background: #34C759;
+  color: var(--cor-branco);
+}
+
+.btn-excluir {
+  background: var(--cor-destaque);
+  color: var(--cor-branco);
+}
+/* ════════════════════════════════════════════
+   N2 — componentes das telas novas
+════════════════════════════════════════════ */
+select,
+textarea,
+input[type="number"] {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid var(--cor-borda);
+  border-radius: 10px;
+  background: var(--cor-branco);
+  font-size: 0.875rem;
+  font-family: inherit;
+  color: var(--cor-texto);
+}
+select:focus, textarea:focus { outline: none; border-color: var(--cor-destaque); }
+textarea { resize: vertical; }
+
+.msg { font-size: 0.82rem; min-height: 0; margin: 0 0 0.6rem; }
+.msg:empty { display: none; }
+.msg.erro { color: #B3261E; background: #FDECEA; padding: 0.5rem 0.7rem; border-radius: 8px; }
+.msg.ok   { color: #1E6B3A; background: #E6F4EA; padding: 0.5rem 0.7rem; border-radius: 8px; }
+
+.linha-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.linha-2 .campo-uf { max-width: 100%; }
+.link-inline { width: auto; align-self: flex-start; margin-top: 0.3rem; }
+
+.vazio { color: var(--cor-texto-claro); font-size: 0.85rem; text-align: center; padding: 0.6rem 0; }
+.sub { color: var(--cor-texto-claro); font-size: 0.8rem; }
+.aviso { color: #9A5B00; font-size: 0.8rem; }
+
+.tela-inner > .card,
+.tela-inner > .btn-group,
+#concurseiros-container > .card { margin-bottom: 0.9rem; }
+.tela-inner > form.busca-id { margin-bottom: 0.9rem; }
+
+.item-lista { padding: 0.7rem 0; border-bottom: 1px solid #EEE; }
+.item-lista:last-child { border-bottom: none; }
+.item-lista p { font-size: 0.82rem; margin: 0.15rem 0; }
+.item-lista.cancelada { opacity: 0.55; }
+.item-topo { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+
+.tag {
+  display: inline-block; padding: 0.15rem 0.55rem; border-radius: 999px;
+  font-size: 0.7rem; font-weight: 600; background: #EEE; color: var(--cor-texto);
+  text-transform: capitalize; white-space: nowrap;
+}
+.tag-planejada  { background: #E8EEF3; color: var(--cor-principal); }
+.tag-confirmada, .tag-aceita { background: #E6F4EA; color: #1E6B3A; }
+.tag-cancelada, .tag-recusada { background: #FDECEA; color: #B3261E; }
+.tag-pendente   { background: #FFF1E6; color: #A44D0E; }
+
+.card-acoes { display: flex; gap: 0.4rem; margin-top: 0.5rem; flex-wrap: wrap; }
+.card-acoes .btn-sm { width: auto; flex: 1; }
+
+.pessoa-topo { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }
+.pessoa p { font-size: 0.82rem; }
+.avatar-mini {
+  width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cor-secundaria); color: #FFF; font-weight: 700; overflow: hidden;
+}
+.avatar-mini img, .avatar-circulo img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+.opcao-check { display: block; font-weight: 600; font-size: 0.85rem; margin-bottom: 0.7rem; cursor: pointer; }
+.opcao-check input { margin-right: 0.4rem; accent-color: var(--cor-destaque); }
+.opcao-check small { display: block; font-weight: 400; color: var(--cor-texto-claro); margin-left: 1.4rem; }
+
+.nav-lista button { position: relative; }
+.badge:empty { display: none; }
+.badge {
+  position: absolute; top: 0; right: 6px; min-width: 16px; height: 16px; padding: 0 4px;
+  border-radius: 8px; background: var(--cor-destaque); color: #FFF; font-size: 0.62rem; line-height: 16px;
+}
+
+/* Chat */
+.chat-wrap { display: flex; flex-direction: column; height: 100%; padding: 0.9rem 1rem 0.6rem; }
+.chat-topo { flex-shrink: 0; }
+.chat-mensagens {
+  flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 0.4rem;
+  padding: 0.6rem 0.2rem; min-height: 260px;
+}
+.bolha {
+  max-width: 78%; padding: 0.5rem 0.7rem; border-radius: 14px; font-size: 0.85rem;
+  line-height: 1.3; word-wrap: break-word;
+}
+.bolha.minha { align-self: flex-end; background: var(--cor-destaque); color: #FFF; border-bottom-right-radius: 4px; }
+.bolha.dele  { align-self: flex-start; background: #FFF; border: 0.5px solid var(--cor-borda); border-bottom-left-radius: 4px; }
+.bolha .hora { display: block; font-size: 0.65rem; opacity: 0.75; margin-top: 0.15rem; text-align: right; }
+.chat-form { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.chat-form button { width: auto; }
+
+/* ════════════════════════════════════════════
+   ALTERNADOR MOBILE / DESKTOP
+════════════════════════════════════════════ */
+.modo-toggle {
+  position: fixed; top: 14px; right: 18px; z-index: 1000;
+  display: flex; gap: 2px; padding: 3px;
+  background: rgba(255,255,255,0.12); border-radius: 999px;
+  backdrop-filter: blur(6px); box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+}
+.modo-toggle button {
+  width: auto; padding: 0.4rem 0.9rem; font-size: 0.8rem; border-radius: 999px;
+  background: transparent; color: rgba(255,255,255,0.8);
+}
+.modo-toggle button[aria-pressed="true"] { background: var(--cor-destaque); color: #FFF; }
+.nav-marca { display: none; }
+
+/* ════════════════════════════════════════════
+   VERSÃO DESKTOP (body.modo-desktop)
+════════════════════════════════════════════ */
+.modo-desktop .modo-toggle { background: var(--cor-principal); }
+.modo-desktop .desktop-bg { display: block; padding: 0; background: var(--cor-fundo); }
+.modo-desktop .iphone {
+  width: 100%; height: 100vh; border-radius: 0; box-shadow: none; background: none;
+}
+.modo-desktop .iphone-btn,
+.modo-desktop .dynamic-island,
+.modo-desktop .status-bar,
+.modo-desktop .home-indicator { display: none; }
+.modo-desktop .iphone-screen { inset: 0; border-radius: 0; flex-direction: row; }
+
+/* Barra de navegação vira menu lateral */
+.modo-desktop .bottom-nav.visivel {
+  order: -1; width: 240px; flex-shrink: 0; padding: 1.5rem 0.9rem;
+  display: flex !important; flex-direction: column; gap: 1.2rem;
+}
+.modo-desktop .nav-marca {
+  display: block; color: #FFF; font-weight: 700; font-size: 1.15rem; padding: 0 0.6rem; margin: 0;
+}
+.modo-desktop .nav-lista { flex-direction: column; gap: 0.3rem; padding: 0; }
+.modo-desktop .nav-lista button {
+  text-align: left; font-size: 0.95rem; padding: 0.7rem 0.9rem; border-radius: 10px;
+}
+.modo-desktop .nav-lista button.nav-ativo { background: rgba(255,255,255,0.12); }
+.modo-desktop .badge { top: 50%; right: 12px; transform: translateY(-50%); }
+
+/* Área de conteúdo */
+.modo-desktop .app-viewport { padding: 2.2rem 2.5rem 3rem; scrollbar-width: auto; }
+.modo-desktop .app-viewport::-webkit-scrollbar { display: block; width: 10px; }
+.modo-desktop .tela-inner { max-width: 1040px; margin: 0 auto; padding: 0; }
+.modo-desktop h1 { font-size: 1.8rem; }
+.modo-desktop p { font-size: 0.95rem; }
+
+/* Login, cadastro e senha como cartão central */
+.modo-desktop .tela-login.ativa,
+.modo-desktop #tela_cadastro .tela-inner,
+.modo-desktop #tela_senha .tela-inner {
+  max-width: 460px; min-height: auto; margin: 6vh auto; padding: 2.5rem;
+  background: #FFF; border-radius: 18px; box-shadow: 0 10px 40px rgba(35,61,77,0.12);
+}
+.modo-desktop .login-brand { font-size: 1.9rem; }
+
+/* Grades de cartões */
+.modo-desktop #viagens-container,
+.modo-desktop #concurseiros-container,
+.modo-desktop #concursos-container {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 1rem;
+}
+.modo-desktop #viagens-container .item-lista {
+  border: 1px solid #E3E8EC; border-radius: 12px; padding: 0.9rem 1rem; background: #FFF;
+}
+.modo-desktop #concurseiros-container > .card { margin-bottom: 0; }
+.modo-desktop #concursos-container .concurso-card { border: 1px solid #E3E8EC; border-radius: 12px; padding: 0.9rem 1rem; }
+.modo-desktop #viagens-container > .vazio,
+.modo-desktop #concurseiros-container > .vazio,
+.modo-desktop #concurseiros-container > .msg { grid-column: 1 / -1; }
+
+.modo-desktop #tela_home .btn-group,
+.modo-desktop #tela_concursos .btn-group { flex-direction: row; display: flex; gap: 0.8rem; }
+.modo-desktop #tela_home .btn-group button { width: auto; padding: 0.75rem 1.6rem; }
+.modo-desktop .busca-id { max-width: 640px; }
+
+/* Conexões em três colunas */
+.modo-desktop #tela_conexoes .tela-inner {
+  display: grid; grid-template-columns: repeat(3, 1fr); align-items: start; gap: 1rem;
+}
+.modo-desktop #tela_conexoes .tela-header-bloco { grid-column: 1 / -1; }
+
+/* Formulários com largura confortável */
+.modo-desktop #form-viagem,
+.modo-desktop #form-concurso,
+.modo-desktop #form-editar-concurso { max-width: 680px; }
+.modo-desktop #form-perfil {
+  display: grid; grid-template-columns: 3fr 2fr; gap: 1rem; align-items: start;
+}
+.modo-desktop #form-perfil > .msg,
+.modo-desktop #form-perfil > button { grid-column: 1 / -1; }
+.modo-desktop #form-perfil > button { width: auto; justify-self: start; padding: 0.75rem 2rem; }
+.modo-desktop .header-PERFIL,
+.modo-desktop .card-config { max-width: 680px; }
+
+/* Chat ocupa a altura da tela */
+.modo-desktop .chat-wrap {
+  max-width: 860px; margin: 0 auto; height: calc(100vh - 5.2rem); padding: 0;
+  background: #FFF; border-radius: 16px; box-shadow: 0 6px 30px rgba(35,61,77,0.08);
+}
+.modo-desktop .chat-topo { padding: 1rem 1.2rem 0.6rem; border-bottom: 1px solid #EEE; }
+.modo-desktop .chat-mensagens { padding: 1rem 1.2rem; }
+.modo-desktop .chat-form { padding: 0.8rem 1.2rem 1rem; }
+.modo-desktop .bolha { max-width: 60%; font-size: 0.95rem; }
+
+/* ════════════════════════════════════════════
+   PAINEL DA HOME, LOGIN DIVIDIDO E MENU (N2)
+════════════════════════════════════════════ */
+/* Login: no celular o "hero" fica escondido */
+.login-hero { display: none; }
+.login-card { display: flex; flex-direction: column; gap: 0.9rem; }
+
+/* Navegação com ícones (celular: ícone em cima, texto embaixo) */
+.nav-lista button { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; }
+.nav-icone { font-size: 1.05rem; line-height: 1; }
+.nav-so-desktop { display: none; }
+.nav-usuario { display: none; }
+
+/* Topo da Home */
+.home-topo { display: flex; flex-direction: column; gap: 0.8rem; }
+.home-topo .btn-group { display: flex; flex-direction: column; gap: 0.5rem; }
+
+/* Números do painel */
+.stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
+.stat {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.1rem;
+  background: #FFF; color: var(--cor-texto); border: 0.5px solid var(--cor-borda);
+  border-radius: 14px; padding: 0.75rem 0.85rem; text-align: left; font-weight: 400;
+}
+.stat:disabled { cursor: default; opacity: 1; }
+.stat:not(:disabled):hover { border-color: var(--cor-destaque); }
+.stat-icone { font-size: 1.1rem; }
+.stat-valor { font-size: 1.5rem; font-weight: 700; color: var(--cor-principal); line-height: 1.1; }
+.stat-rotulo { font-size: 0.72rem; color: var(--cor-texto-claro); }
+
+/* Destaque da próxima prova */
+.proxima {
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  background: linear-gradient(120deg, var(--cor-principal), var(--cor-secundaria)); border: none;
+}
+.proxima h2, .proxima p, .proxima .sub { color: #FFF; }
+.proxima .sub { opacity: 0.8; }
+.proxima-rotulo { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; opacity: 0.75; margin-bottom: 0.2rem; }
+.proxima-contador {
+  flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 74px; height: 74px; border-radius: 50%; background: var(--cor-destaque); color: #FFF;
+}
+.proxima-contador strong { color: #FFF; font-size: 1.5rem; line-height: 1; }
+.proxima-contador span { font-size: 0.7rem; }
+
+.home-grid { display: flex; flex-direction: column; gap: 1rem; }
+.home-lateral { display: flex; flex-direction: column; gap: 1rem; }
+
+/* Linhas compactas (sugestões e conversas) */
+.mini-linha { display: flex; align-items: center; gap: 0.6rem; padding: 0.5rem 0; border-bottom: 1px solid #EEE; }
+.mini-linha:last-child { border-bottom: none; }
+.mini-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.mini-info strong { font-size: 0.85rem; }
+.mini-info span { font-size: 0.75rem; color: var(--cor-texto-claro); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-linha .btn-sm, .mini-linha .tag { width: auto; flex-shrink: 0; }
+.mini-linha .avatar-mini { width: 34px; height: 34px; font-size: 0.85rem; }
+
+/* Filtros rápidos por cargo */
+.chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.5rem; }
+.chip {
+  width: auto; padding: 0.35rem 0.8rem; border-radius: 999px; font-size: 0.75rem; font-weight: 500;
+  background: #FFF; color: var(--cor-principal); border: 1px solid var(--cor-borda);
+}
+.chip.ativo { background: var(--cor-principal); color: #FFF; border-color: var(--cor-principal); }
+
+/* ── Desktop ───────────────────────────────── */
+.modo-desktop .nav-lista button { flex-direction: row; gap: 0.7rem; }
+.modo-desktop .nav-icone { font-size: 1.1rem; width: 1.4rem; text-align: center; }
+.modo-desktop .nav-so-desktop { display: block; }
+.modo-desktop .bottom-nav.visivel nav { flex: 1; }
+.modo-desktop .nav-usuario {
+  display: flex; align-items: center; gap: 0.6rem; padding: 0.8rem 0.6rem 0;
+  border-top: 1px solid rgba(255,255,255,0.12);
+}
+.modo-desktop .nav-usuario .avatar-mini { background: var(--cor-destaque); }
+.nav-usuario-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.nav-usuario-info strong { color: #FFF; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-usuario-info span { color: rgba(255,255,255,0.6); font-size: 0.72rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-sair { width: auto; padding: 0.35rem 0.6rem; font-size: 0.72rem; background: rgba(255,255,255,0.12); }
+
+.modo-desktop .home-topo { flex-direction: row; justify-content: space-between; align-items: flex-end; }
+.modo-desktop .home-topo .btn-group { flex-direction: row; }
+.modo-desktop .home-topo .btn-group button { width: auto; padding: 0.75rem 1.4rem; }
+.modo-desktop .stats { grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+.modo-desktop .stat { padding: 1.1rem 1.2rem; }
+.modo-desktop .stat-valor { font-size: 2rem; }
+.modo-desktop .stat-rotulo { font-size: 0.8rem; }
+.modo-desktop .proxima { padding: 1.4rem 1.6rem; }
+.modo-desktop .proxima h2 { font-size: 1.4rem; }
+.modo-desktop .proxima-contador { width: 96px; height: 96px; }
+.modo-desktop .proxima-contador strong { font-size: 2rem; }
+.modo-desktop .home-grid { display: grid; grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr); align-items: start; }
+.modo-desktop #viagens-container { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+
+/* Login dividido */
+.modo-desktop .tela-login.ativa {
+  display: grid; grid-template-columns: 1.1fr 1fr; max-width: 980px; min-height: 540px;
+  margin: 7vh auto; padding: 0; overflow: hidden; gap: 0;
+}
+.modo-desktop .login-hero {
+  display: flex; flex-direction: column; justify-content: center; gap: 1rem; padding: 3rem;
+  background: linear-gradient(140deg, var(--cor-principal), var(--cor-secundaria)); color: #FFF;
+}
+.hero-marca { color: var(--cor-destaque); font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; font-size: 0.8rem; margin: 0; }
+.hero-titulo { color: #FFF; font-size: 2.1rem; line-height: 1.15; margin: 0; }
+.hero-texto { color: rgba(255,255,255,0.85); font-size: 1rem; }
+.hero-lista { list-style: none; display: flex; flex-direction: column; gap: 0.7rem; margin-top: 0.5rem; }
+.hero-lista li { color: #FFF; font-size: 0.95rem; display: flex; gap: 0.6rem; align-items: center; }
+.hero-lista span { font-size: 1.2rem; }
+.modo-desktop .login-card { justify-content: center; padding: 3rem 2.8rem; }
+/* espaço para o alternador Mobile/Desktop no topo */
+.modo-desktop .app-viewport { padding-top: 3.8rem; }
+.login-slogan { font-weight: 600; color: var(--cor-destaque); margin-bottom: 0.2rem; }
+.modo-desktop .login-slogan { display: none; } /* no desktop a frase já está no painel ao lado */
+.btn-proxima { width: auto; flex-shrink: 0; background: var(--cor-destaque); }
+/* No celular, o aviso "nenhuma prova" fica com o botão embaixo do texto */
+body:not(.modo-desktop) .proxima:has(.btn-proxima) { flex-direction: column; align-items: stretch; }
+body:not(.modo-desktop) .btn-proxima { width: 100%; }

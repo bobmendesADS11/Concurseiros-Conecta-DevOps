@@ -1,0 +1,29 @@
+sequenceDiagram
+  actor A as Ana (solicitante)
+  participant F as Frontend
+  participant C as conexaoController
+  participant P as Prisma / PostgreSQL
+  actor B as Bruno (destinatário)
+  A->>F: clica "Conectar" no perfil de Bruno
+  F->>C: POST /api/conexoes {id_destinatario} + JWT
+  C->>P: busca destinatário + preferências
+  alt para si mesmo
+    C-->>F: 400
+  else Bruno não recebe solicitações
+    C-->>F: 403
+  else já existe solicitação/conexão
+    C-->>F: 409 SOLICITACAO_DUPLICADA
+  else válido
+    C->>P: INSERT conexoes (status pendente)
+    C-->>F: 201 {status: pendente}
+  end
+  B->>F: abre Conexões, clica Aceitar
+  F->>C: PATCH /api/conexoes/:id {status: aceita}
+  alt quem responde não é o destinatário
+    C-->>F: 403
+  else solicitação já respondida
+    C-->>F: 409
+  else ok
+    C->>P: UPDATE status = aceita, data_resposta
+    C-->>F: 200 conexão aceita
+  end

@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id_usuario         Int                     @id @default(autoincrement()) @map("id_usuario")
+  cpf                String                  @unique(map: "usuarios_cpf_key") @db.Char(11)
+  nome               String                  @db.VarChar(150)
+  email              String                  @unique(map: "usuarios_email_key") @db.VarChar(150)
+  senha              String                  @db.VarChar(255)
+  data_cadastro      DateTime?               @default(now())
+  cidade             String?                 @db.VarChar(100)
+  estado             String?                 @db.Char(2)
+  bio                String?                 @db.VarChar(500)
+  foto_url           String?                 @db.VarChar(255)
+  candidatosConcurso CandidatosConcurso[]
+  preferencia        PreferenciaPrivacidade?
+  viagens            Viagem[]
+  conexoesEnviadas   Conexao[]               @relation("ConexaoSolicitante")
+  conexoesRecebidas  Conexao[]               @relation("ConexaoDestinatario")
+  mensagens          Mensagem[]
+
+  @@map("usuarios")
+}
+
+model PreferenciaPrivacidade {
+  id_preferencia       Int     @id @default(autoincrement())
+  id_usuario           Int     @unique
+  perfil_publico       Boolean @default(true)
+  receber_solicitacoes Boolean @default(true)
+  permitir_mensagens   Boolean @default(true)
+  usuario              Usuario @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade, map: "fk_preferencia_usuario")
+
+  @@map("preferencias_privacidade")
+}
+
+model Banca {
+  id_banca  Int        @id @default(autoincrement()) @map("id_banca")
+  nome      String     @unique(map: "bancas_nome_key") @db.VarChar(100)
+  concursos Concurso[]
+
+  @@map("bancas")
+}
+
+model Concurso {
+  id_concurso        Int                  @id @default(autoincrement()) @map("id_concurso")
+  id_banca           Int                  @map("id_banca")
+  cargo              String               @db.VarChar(150)
+  local              String?              @db.VarChar(150)
+  data               DateTime?            @db.Date()
+  url_edital         String?              @db.VarChar(255)
+  qtd_candidatos     Int?                 @default(0)
+  bancaRef           Banca                @relation(fields: [id_banca], references: [id_banca], onUpdate: Cascade, onDelete: Restrict, map: "fk_concurso_banca")
+  candidatosConcurso CandidatosConcurso[]
+  viagens            Viagem[]
+
+  @@map("concurso")
+}
+
+model CandidatosConcurso {
+  id_usuario     Int       @map("id_usuario")
+  id_concurso    Int       @map("id_concurso")
+  data_inscricao DateTime? @default(now())
+  usuario        Usuario   @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade, map: "fk_candidatos_usuario")
+  concurso       Concurso  @relation(fields: [id_concurso], references: [id_concurso], onUpdate: Cascade, onDelete: Cascade, map: "fk_candidatos_concurso")
+
+  @@id([id_usuario, id_concurso])
+  @@map("candidatos_concurso")
+}
+
+model Viagem {
+  id_viagem      Int       @id @default(autoincrement())
+  id_usuario     Int
+  id_concurso    Int
+  cidade_origem  String    @db.VarChar(100)
+  data_ida       DateTime  @db.Date()
+  data_volta     DateTime? @db.Date()
+  transporte     String?   @db.VarChar(50)
+  hospedagem     String?   @db.VarChar(150)
+  observacoes    String?   @db.VarChar(500)
+  status         String    @default("planejada") @db.VarChar(20)
+  conflito_datas Boolean   @default(false)
+  data_cadastro  DateTime  @default(now())
+  usuario        Usuario   @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Cascade, onDelete: Cascade, map: "fk_viagem_usuario")
+  concurso       Concurso  @relation(fields: [id_concurso], references: [id_concurso], onUpdate: Cascade, onDelete: Restrict, map: "fk_viagem_concurso")
+
+  @@index([id_usuario])
+  @@map("viagens")
+}
+
+model Conexao {
+  id_conexao       Int        @id @default(autoincrement())
+  id_solicitante   Int
+  id_destinatario  Int
+  status           String     @default("pendente") @db.VarChar(20)
+  data_solicitacao DateTime   @default(now())
+  data_resposta    DateTime?
+  solicitante      Usuario    @relation("ConexaoSolicitante", fields: [id_solicitante], references: [id_usuario], onDelete: Cascade, map: "fk_conexao_solicitante")
+  destinatario     Usuario    @relation("ConexaoDestinatario", fields: [id_destinatario], references: [id_usuario], onDelete: Cascade, map: "fk_conexao_destinatario")
+  mensagens        Mensagem[]
+
+  @@unique([id_solicitante, id_destinatario], map: "conexoes_par_unico")
+  @@map("conexoes")
+}
+
+model Mensagem {
+  id_mensagem  Int      @id @default(autoincrement())
+  id_conexao   Int
+  id_remetente Int
+  conteudo     String   @db.VarChar(1000)
+  data_envio   DateTime @default(now())
+  conexao      Conexao  @relation(fields: [id_conexao], references: [id_conexao], onDelete: Cascade, map: "fk_mensagem_conexao")
+  remetente    Usuario  @relation(fields: [id_remetente], references: [id_usuario], onDelete: Cascade, map: "fk_mensagem_remetente")
+
+  @@index([id_conexao, data_envio])
+  @@map("mensagens")
+}
