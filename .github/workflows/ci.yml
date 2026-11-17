@@ -1,0 +1,127 @@
+# Workflow 1 — Continuous Integration + Continuous Delivery
+# Roda em todo push nas branches main, develop e feature/* e em todo pull request.
+#   1. Análise de código estático (ESLint)
+#   2. Testes de unidade + integração com cobertura (node:test + PostgreSQL)
+#   3. Teste de interface com Selenium (Chrome headless)
+#   4. Entrega contínua: empacota a aplicação pronta para deploy (artefato)
+name: CI/CD
+
+on:
+  push:
+    branches: [main, develop, 'feature/**']
+  pull_request:
+    branches: [main, develop]
+
+defaults:
+  run:
+    working-directory: backend
+
+env:
+  NODE_VERSION: '22'
+  JWT_SECRET: segredo-de-ci
+
+jobs:
+  lint:
+    name: Análise estática (ESLint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+
+  testes:
+    name: Testes de unidade e cobertura
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: concurseiro_conecta_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      # Os testes usam automaticamente o banco <nome>_test (ver tests/helpers.js)
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/concurseiro_conecta?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Rodar testes com cobertura
+        run: npm run test:coverage
+      - name: Publicar relatório de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: backend/coverage/
+
+  selenium:
+    name: Teste de interface (Selenium)
+    runs-on: ubuntu-latest
+    needs: [lint, testes]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: concurseiro_conecta
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/concurseiro_conecta?schema=public
+      PORT: 3000
+      APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - run: npm run db:migrate
+      - name: Subir a aplicação
+        run: |
+          nohup node src/server.js > server.log 2>&1 &
+          npx --yes wait-on http://localhost:3000/api/health --timeout 60000
+      - name: Rodar teste Selenium
+        run: npm run test:e2e
+      - name: Log do servidor
+        if: failure()
+        run: cat server.log
+
+  entrega:
+    name: Entrega contínua (pacote da aplicação)
+    runs-on: ubuntu-latest
+    needs: [lint, testes, selenium]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
+    defaults:
+      run:
+        working-directory: .
+    steps:
+      - uses: actions/checkout@v4
+      - name: Empacotar a aplicação
+        run: |
+          mkdir -p dist
+          tar --exclude=node_modules --exclude=coverage -czf dist/concurseiro-conecta-${GITHUB_SHA::7}.tar.gz backend frontend deploy README.md
+          ls -lh dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: concurseiro-conecta-${{ github.ref_name }}-${{ github.sha }}
+          path: dist/*.tar.gz
