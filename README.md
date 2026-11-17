@@ -2,7 +2,7 @@
 
 Plataforma para concurseiros que viajam para fazer provas em outras cidades: planejar a viagem, encontrar quem vai fazer a mesma prova, conectar-se e combinar transporte e hospedagem pelo chat.
 
-**Versão:** `v3.0.0-n2` (entrega final da N2 — PMI III / ADS31, 13/11/2026)
+**Versão:** `v3.0.0-n2` (entrega final da N2 — PMI III / ADS31, 13/11/2026) · Pipeline de CI/CD da **N3 de Ferramentas de Implantação Contínua (DevOps)**
 
 **Equipe:** Gabriel de Rezende Silva Scatolino, Moacyr Mendes de Oliveira Neto e Fernando Tolentino de Souza Hessmann Dutra.
 
@@ -62,6 +62,34 @@ Usuários fictícios `demo1@exemplo.com` a `demo4@exemplo.com`, todos com a senh
 
 Para testar o chat ao vivo, abra uma janela normal com demo1 e uma anônima com demo2.
 
+## DevOps (N3)
+
+### Branches
+- `main` — produção (o que está no EC2)
+- `develop` — integração
+- `feature/*` — cada funcionalidade nova, com pull request para `develop`
+
+### Workflows (`.github/workflows/`)
+| Workflow | Quando roda | O que faz |
+|---|---|---|
+| **CI/CD** (`ci.yml`) | push em `main`, `develop`, `feature/**` e pull requests | ESLint (análise estática), testes de unidade + integração com cobertura, teste de interface com Selenium e, em `main`/`develop`, empacota a aplicação como artefato (entrega contínua) |
+| **CD - Deploy no EC2** (`cd.yml`) | quando o CI/CD passa na `main` (ou manualmente) | entra no EC2 por SSH, atualiza o código, aplica as migrations e reinicia a aplicação com PM2 |
+
+Secrets do repositório usados pelo deploy: `EC2_HOST` (IP público), `EC2_USER` (`ubuntu`) e `EC2_SSH_KEY` (conteúdo do arquivo `.pem`).
+
+### Servidor
+Ubuntu no EC2 com Node.js 22, PostgreSQL, PM2 (app na porta 3001) e nginx publicando na porta 80. A preparação inicial está em `deploy/setup-ec2.sh` e cada deploy roda `deploy/deploy.sh`. Acesse `http://<ip_do_servidor>`.
+
+### Comandos
+```bash
+cd backend
+npm run lint           # análise estática
+npm run test:unit      # só testes de unidade (não precisam de banco)
+npm test               # unidade + integração
+npm run test:coverage  # tudo com relatório de cobertura (coverage/lcov.info)
+APP_URL=http://localhost:3000 npm run test:e2e   # Selenium (app precisa estar rodando)
+```
+
 ## Testes automatizados
 
 ```bash
@@ -69,13 +97,12 @@ cd backend
 npm test
 ```
 
-São 30 testes (T01–T30) com `node:test`, `supertest` e `socket.io-client`: cenários de sucesso e de falha de cadastro, login, perfil, privacidade, concursos (regressão da N1), viagens, conexões e chat em tempo real. Eles usam um banco separado, **`concurseiro_conecta_test`**, criado automaticamente pelo `prisma migrate deploy` se o usuário do PostgreSQL tiver permissão; senão, crie o banco vazio antes. Os dados de demonstração não são tocados.
+São 30 testes de integração (T01–T30), 12 testes de unidade em `tests/unit/` e 2 testes de interface com Selenium em `tests/e2e/`. Os de integração usam `node:test`, `supertest` e `socket.io-client`: cenários de sucesso e de falha de cadastro, login, perfil, privacidade, concursos (regressão da N1), viagens, conexões e chat em tempo real. Eles usam um banco separado, **`concurseiro_conecta_test`**, criado automaticamente pelo `prisma migrate deploy` se o usuário do PostgreSQL tiver permissão; senão, crie o banco vazio antes. Os dados de demonstração não são tocados.
 
 ## Documentação
 
 - `docs/api.md` — contrato dos endpoints e eventos do WebSocket, com validações e erros.
 - `docs/diagramas/` — arquitetura, casos de uso, DER e diagramas de sequência (login, conexão, chat), em Mermaid (`.mmd`) e imagem (`.png`).
-- `documents/` — relatórios das entregas.
 
 ## Estrutura
 
@@ -89,7 +116,9 @@ backend/
   src/services/      senha (bcrypt), token (JWT), conexões e mensagens
   src/websocket/     chat em tempo real
   src/middlewares/   autenticação JWT
-  tests/             testes automatizados T01–T30
+  tests/             testes de integração T01–T30, unit/ e e2e/ (Selenium)
 frontend/            index.html, script.js, styles.css
 docs/                api.md e diagramas
+deploy/              scripts do servidor EC2
+.github/workflows/   ci.yml e cd.yml
 ```
