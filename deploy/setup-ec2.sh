@@ -16,6 +16,13 @@ if ! command -v node >/dev/null; then
 fi
 command -v pm2 >/dev/null || sudo npm install -g pm2
 
+echo ">> Criando 1 GB de swap (a t3.micro tem só 1 GB de RAM)"
+if [ ! -f /swapfile ]; then
+  sudo fallocate -l 1G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+fi
+sudo swapon /swapfile 2>/dev/null || true
+
 echo ">> Criando o banco de dados"
 DB_SENHA="$(openssl rand -hex 16)"
 sudo -u postgres psql -v ON_ERROR_STOP=1 -c "DO \$\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='app') THEN CREATE ROLE app LOGIN CREATEDB PASSWORD '${DB_SENHA}'; ELSE ALTER ROLE app PASSWORD '${DB_SENHA}'; END IF; END \$\$;"
@@ -31,6 +38,7 @@ PORT=${PORTA}
 JWT_SECRET=$(openssl rand -hex 32)
 ENV
 npm ci
+sha256sum package-lock.json | cut -d' ' -f1 > node_modules/.lock-hash
 npx prisma migrate deploy
 npm run db:seed || true
 
