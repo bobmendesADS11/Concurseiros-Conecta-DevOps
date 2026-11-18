@@ -39,3 +39,28 @@ jobs:
             sleep 3
           done
           echo "A aplicação não respondeu" && exit 1
+
+      # Teste de fumaça: roda o Selenium no site publicado no EC2.
+      # Pega erros que só aparecem no servidor de verdade
+      # (como o bug da porta 3000).
+      - name: Baixar o código para o teste de fumaça
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Instalar o Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Instalar as dependências do teste
+        working-directory: backend
+        run: npm ci
+
+      - name: Teste de fumaça (Selenium no site do EC2)
+        working-directory: backend
+        env:
+          APP_URL: http://${{ secrets.EC2_HOST }}
+        run: npm run test:e2e
