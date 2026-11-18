@@ -32,5 +32,7 @@ test('login com senha errada mostra mensagem de erro na tela', async () => {
   await driver.findElement(By.css('#form-login button[type="submit"]')).click();
   const msg = await driver.findElement(By.id('msg-login'));
   await driver.wait(async () => (await msg.getText()).trim().length > 0, 10000);
-  assert.ok((await msg.getText()).length > 0);
+  // A mensagem tem que vir do servidor. Se aparecer "Não foi possível
+  // falar com o servidor", o site não chegou na API (o bug da porta 3000).
+  assert.equal(await msg.getText(), 'E-mail ou senha incorretos.');
 });
