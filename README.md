@@ -35,8 +35,8 @@ Pré-requisitos: **Node.js 20+** (os testes usam `node --test` com padrão de ar
 
 ```bash
 # 1. Clonar e entrar no backend
-git clone https://github.com/GabrielScatolino/Concurseiros-Conecta.git
-cd Concurseiros-Conecta/backend
+git clone https://github.com/bobmendesADS11/Concurseiros-Conecta-DevOps.git
+cd Concurseiros-Conecta-DevOps/backend
 
 # 2. Instalar as dependências
 npm install
