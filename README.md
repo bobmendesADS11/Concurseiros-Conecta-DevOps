@@ -105,7 +105,7 @@ São 30 testes de integração (T01–T30), 15 testes de unidade em `tests/unit/
 
 - `docs/scrum.md` — backlog, sprints, estimativas e retrospectiva (Scrum).
 - `docs/api.md` — contrato dos endpoints e eventos do WebSocket, com validações e erros.
-- `docs/diagramas/` — arquitetura, casos de uso, DER e diagramas de sequência (login, conexão, chat), em Mermaid (`.mmd`) e imagem (`.png`).
+- `docs/diagramas/` — diagramas UML: casos de uso, classes, entidade-relacionamento (DER), componentes (arquitetura), implantação na AWS e sequência (login, conexão, chat), em PlantUML (`.puml`) e imagem (`.png`).
 
 ## Estrutura
 

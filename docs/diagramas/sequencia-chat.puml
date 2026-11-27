@@ -1,0 +1,31 @@
+@startuml sequencia-chat
+!include estilo.iuml
+title Diagrama de Sequência — Conversar no chat (UC12)
+autonumber
+participant "Frontend\nda Ana" as FA
+participant "Socket.IO\n(chat.js)" as W
+participant "conexaoService" as S
+database "PostgreSQL" as P
+participant "Frontend\ndo Bruno" as FB
+
+FA -> W : conecta com o token JWT
+W -> W : validarToken (recusa se inválido)
+FA -> W : entrar_conexao { id_conexao }
+W -> S : conexaoAceitaDoUsuario
+S --> W : ok (participante e conexão aceita)
+FA -> W : enviar_mensagem { id_conexao, conteudo }
+W -> S : enviarMensagem
+activate S
+S -> S : valida 1 a 1000 caracteres,\nconexão aceita e permitir_mensagens
+alt mensagem válida
+  S -> P : INSERT mensagens
+  P --> S : mensagem salva
+  S --> W : mensagem
+  W --> FA : ack { ok: true, mensagem }
+  W --> FB : receber_mensagem (sala da conexão)
+else sem conexão aceita ou mensagens bloqueadas
+  S --> W : erro 403
+  W --> FA : ack { ok: false, status: 403 }
+end
+deactivate S
+@enduml
