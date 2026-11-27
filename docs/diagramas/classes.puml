@@ -1,0 +1,109 @@
+@startuml classes
+!include estilo.iuml
+title Diagrama de Classes (modelo de domínio) — Concurseiros Conecta
+hide empty methods
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 70
+
+enum StatusViagem {
+  PLANEJADA
+  CONFIRMADA
+  CANCELADA
+}
+enum StatusConexao {
+  PENDENTE
+  ACEITA
+  RECUSADA
+}
+enum Transporte {
+  ONIBUS
+  CARRO
+  AVIAO
+  CARONA
+  OUTRO
+}
+
+class Usuario {
+  - idUsuario : int
+  - cpf : String
+  - nome : String
+  - email : String
+  - senhaHash : String
+  - dataCadastro : DateTime
+  - cidade : String
+  - estado : String
+  - bio : String
+  - fotoUrl : String
+  + cadastrar()
+  + autenticar(email, senha) : Token
+  + redefinirSenha(email, cpf, novaSenha)
+  + atualizarPerfil(bio, foto)
+}
+
+class PreferenciaPrivacidade {
+  - idPreferencia : int
+  - perfilPublico : boolean
+  - receberSolicitacoes : boolean
+  - permitirMensagens : boolean
+  + atualizar()
+}
+
+class Banca {
+  - idBanca : int
+  - nome : String
+}
+
+class Concurso {
+  - idConcurso : int
+  - cargo : String
+  - local : String
+  - data : Date
+  - urlEdital : String
+  - qtdCandidatos : int
+}
+
+class CandidatoConcurso {
+  - dataInscricao : DateTime
+}
+
+class Viagem {
+  - idViagem : int
+  - cidadeOrigem : String
+  - dataIda : Date
+  - dataVolta : Date
+  - transporte : Transporte
+  - hospedagem : String
+  - observacoes : String
+  - status : StatusViagem
+  - conflitoDatas : boolean
+  + verificarConflito() : boolean
+  + cancelar()
+}
+
+class Conexao {
+  - idConexao : int
+  - status : StatusConexao
+  - dataSolicitacao : DateTime
+  - dataResposta : DateTime
+  + aceitar()
+  + recusar()
+}
+
+class Mensagem {
+  - idMensagem : int
+  - conteudo : String
+  - dataEnvio : DateTime
+}
+
+Usuario "1" *-- "1" PreferenciaPrivacidade : possui >
+Banca "1" -- "0..*" Concurso : organiza >
+Usuario "1" -- "0..*" Viagem : planeja >
+Viagem "0..*" -- "1" Concurso : destino >
+Usuario "0..*" -- "0..*" Concurso : inscrito em >
+(Usuario, Concurso) .. CandidatoConcurso
+Usuario "1" -- "0..*" Conexao : solicita >
+Usuario "1" -- "0..*" Conexao : recebe >
+Conexao "1" *-- "0..*" Mensagem : contém >
+Usuario "1" -- "0..*" Mensagem : envia >
+@enduml

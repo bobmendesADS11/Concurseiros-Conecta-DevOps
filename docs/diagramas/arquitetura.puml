@@ -1,0 +1,38 @@
+@startuml arquitetura
+!include estilo.iuml
+title Diagrama de Componentes (arquitetura) — Concurseiros Conecta
+skinparam componentStyle uml2
+
+package "Frontend (navegador)" {
+  [Telas HTML/CSS\n(index.html, styles.css)] as UI
+  [Cliente da API\n(script.js)] as CLI
+  [Cliente Socket.IO] as SIO
+}
+
+package "Backend — Node.js + Express" {
+  [Rotas REST /api/*\n(routes/)] as ROT
+  [Middleware autenticar\n(valida JWT)] as MID
+  [Controllers\nauth · perfil · viagem · concurso\nconcurseiro · conexao] as CTRL
+  [Services\nsenha (bcrypt) · token (JWT)\nconexaoService] as SRV
+  [Chat em tempo real\n(websocket/chat.js — Socket.IO)] as WS
+  [Prisma Client (ORM)] as ORM
+}
+
+database "PostgreSQL\nconcurseiro_conecta" as DB
+
+interface "HTTP / JSON\n+ Bearer token" as HTTP
+interface "WebSocket\n(JWT no handshake)" as WSI
+
+UI --> CLI
+CLI --> HTTP
+HTTP - ROT
+SIO --> WSI
+WSI - WS
+ROT --> MID
+MID --> CTRL
+CTRL --> SRV
+CTRL --> ORM
+WS --> SRV
+SRV --> ORM
+ORM --> DB : SQL / migrations
+@enduml

@@ -1,0 +1,104 @@
+@startuml der
+!include estilo.iuml
+title Diagrama Entidade-Relacionamento (PostgreSQL) — Concurseiros Conecta
+hide circle
+hide empty members
+skinparam linetype polyline
+skinparam nodesep 50
+skinparam ranksep 80
+
+entity "usuarios" as usuarios {
+  * id_usuario : SERIAL <<PK>>
+  --
+  * cpf : CHAR(11) <<UNIQUE>>
+  * nome : VARCHAR(150)
+  * email : VARCHAR(150) <<UNIQUE>>
+  * senha : VARCHAR(255) (hash bcrypt)
+  data_cadastro : TIMESTAMP
+  cidade : VARCHAR(100)
+  estado : CHAR(2)
+  bio : VARCHAR(500)
+  foto_url : VARCHAR(255)
+}
+
+entity "preferencias_privacidade" as pref {
+  * id_preferencia : SERIAL <<PK>>
+  --
+  * id_usuario : INT <<FK, UNIQUE>>
+  * perfil_publico : BOOLEAN
+  * receber_solicitacoes : BOOLEAN
+  * permitir_mensagens : BOOLEAN
+}
+
+entity "bancas" as bancas {
+  * id_banca : SERIAL <<PK>>
+  --
+  * nome : VARCHAR(100) <<UNIQUE>>
+}
+
+entity "concurso" as concurso {
+  * id_concurso : SERIAL <<PK>>
+  --
+  * id_banca : INT <<FK>>
+  * cargo : VARCHAR(150)
+  local : VARCHAR(150)
+  data : DATE
+  url_edital : VARCHAR(255)
+  qtd_candidatos : INT (trigger)
+}
+
+entity "candidatos_concurso" as cand {
+  * id_usuario : INT <<PK, FK>>
+  * id_concurso : INT <<PK, FK>>
+  --
+  data_inscricao : TIMESTAMP
+}
+
+entity "viagens" as viagens {
+  * id_viagem : SERIAL <<PK>>
+  --
+  * id_usuario : INT <<FK>>
+  * id_concurso : INT <<FK>>
+  * cidade_origem : VARCHAR(100)
+  * data_ida : DATE
+  data_volta : DATE (CHECK >= data_ida)
+  transporte : VARCHAR(50)
+  hospedagem : VARCHAR(150)
+  observacoes : VARCHAR(500)
+  * status : VARCHAR(20) (CHECK)
+  * conflito_datas : BOOLEAN
+  * data_cadastro : TIMESTAMP
+}
+
+entity "conexoes" as conexoes {
+  * id_conexao : SERIAL <<PK>>
+  --
+  * id_solicitante : INT <<FK>>
+  * id_destinatario : INT <<FK>>
+  * status : VARCHAR(20) (CHECK)
+  * data_solicitacao : TIMESTAMP
+  data_resposta : TIMESTAMP
+  UNIQUE (id_solicitante, id_destinatario)
+  CHECK (id_solicitante <> id_destinatario)
+}
+
+entity "mensagens" as mensagens {
+  * id_mensagem : SERIAL <<PK>>
+  --
+  * id_conexao : INT <<FK>>
+  * id_remetente : INT <<FK>>
+  * conteudo : VARCHAR(1000)
+  * data_envio : TIMESTAMP
+}
+
+usuarios ||-up-o| pref : tem
+bancas ||--o{ concurso : organiza
+usuarios ||--o{ viagens : planeja
+concurso ||--o{ viagens : "destino de"
+usuarios ||--o{ cand : "inscrito em"
+concurso ||--o{ cand : tem
+usuarios ||-right-o{ conexoes : solicita
+usuarios ||-right-o{ conexoes : recebe
+conexoes ||--o{ mensagens : contém
+usuarios ||--o{ mensagens : envia
+@enduml
