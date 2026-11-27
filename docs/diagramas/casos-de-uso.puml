@@ -1,0 +1,46 @@
+@startuml casos-de-uso
+!include estilo.iuml
+title Diagrama de Casos de Uso — Concurseiros Conecta
+left to right direction
+actor "Visitante" as V
+actor "Concurseiro" as C
+C -|> V
+
+rectangle "Sistema Concurseiros Conecta" {
+  usecase "UC01 Cadastrar conta" as UC01
+  usecase "UC02 Fazer login" as UC02
+  usecase "UC03 Redefinir senha" as UC03
+  usecase "UC04 Editar perfil\n(bio e foto)" as UC04
+  usecase "UC05 Configurar privacidade" as UC05
+  usecase "UC06 Planejar viagem" as UC06
+  usecase "UC07 Gerenciar viagens" as UC07
+  usecase "UC08 Gerenciar concursos" as UC08
+  usecase "UC09 Buscar concurseiros\ndo mesmo concurso" as UC09
+  usecase "UC10 Solicitar conexão" as UC10
+  usecase "UC11 Responder conexão" as UC11
+  usecase "UC12 Conversar no chat" as UC12
+  usecase "Validar CPF" as INC1
+  usecase "Verificar conflito\nde datas" as INC2
+  usecase "Verificar preferências\nde privacidade" as INC3
+  usecase "Validar conexão aceita" as INC4
+}
+
+V -- UC01
+V -- UC02
+V -- UC03
+C -- UC04
+C -- UC05
+C -- UC06
+C -- UC07
+C -- UC08
+C -- UC09
+C -- UC10
+C -- UC11
+C -- UC12
+
+UC01 ..> INC1 : <<include>>
+UC06 ..> INC2 : <<include>>
+UC09 ..> INC3 : <<include>>
+UC10 ..> INC3 : <<include>>
+UC12 ..> INC4 : <<include>>
+@enduml

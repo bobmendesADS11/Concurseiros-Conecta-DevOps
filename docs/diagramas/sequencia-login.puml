@@ -1,0 +1,34 @@
+@startuml sequencia-login
+!include estilo.iuml
+title Diagrama de Sequência — Login (UC02)
+autonumber
+actor "Concurseiro" as U
+participant "Frontend\n(script.js)" as F
+participant "authController\n.login" as A
+participant "senha\n(bcrypt)" as S
+participant "token\n(JWT)" as T
+database "PostgreSQL\n(Prisma)" as P
+
+U -> F : informa e-mail e senha, clica Entrar
+activate F
+F -> A : POST /api/auth/login
+activate A
+A -> P : buscar usuário por e-mail
+P --> A : usuário (senha em hash)
+alt usuário encontrado
+  A -> S : conferirSenha(senha, hash)
+  S --> A : resultado
+end
+alt e-mail e senha corretos
+  A -> T : emitirToken(usuário)
+  T --> A : token JWT (8 h)
+  A --> F : 200 { token, usuario }
+  F -> F : guarda o token e abre o Socket.IO
+  F --> U : mostra a tela inicial
+else e-mail inexistente ou senha errada
+  A --> F : 401 "E-mail ou senha incorretos."
+  deactivate A
+  F --> U : mostra o erro na tela de login
+end
+deactivate F
+@enduml

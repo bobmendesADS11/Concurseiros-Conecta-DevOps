@@ -1,0 +1,34 @@
+@startuml implantacao
+!include estilo.iuml
+title Diagrama de Implantação — Concurseiros Conecta na AWS
+
+
+node "Dispositivo do usuário\n(celular ou computador)" as DEV {
+  artifact "Navegador web\n(frontend HTML/CSS/JS)" as BROWSER
+}
+
+node "AWS EC2 — nuvem-linux\n(Ubuntu, t3.micro, us-east-2)" as EC2 {
+  node "Nginx\n(proxy reverso, porta 80)" as NGINX
+  node "Node.js 22 + PM2\n(porta 3001)" as NODE {
+    artifact "API Express\n+ Socket.IO" as API
+    artifact "Frontend estático\n(servido pelo Express)" as FRONT
+  }
+  database "PostgreSQL 16\n(concurseiro_conecta)" as PG
+}
+
+node "GitHub" as GH {
+  artifact "Repositório\nConcurseiros-Conecta-DevOps" as REPO
+  node "GitHub Actions" as GHA {
+    artifact "ci.yml\nlint · testes · cobertura · Selenium" as CI
+    artifact "cd.yml\ndeploy por SSH + teste de fumaça" as CD
+  }
+}
+
+BROWSER --> NGINX : HTTP :80\n(HTTP + WebSocket)
+NGINX --> API : proxy :3001
+API -right-> FRONT
+API -down-> PG : Prisma / TCP 5432
+REPO --> CI : push / pull request
+CI --> CD : sucesso na main
+CD --> EC2 : SSH → deploy.sh\n(git reset, migrate, pm2 reload)
+@enduml

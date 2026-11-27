@@ -1,0 +1,45 @@
+@startuml sequencia-conexao
+!include estilo.iuml
+title Diagrama de Sequência — Solicitar e responder conexão (UC10 e UC11)
+autonumber
+actor "Ana\n(solicitante)" as A
+participant "Frontend" as F
+participant "Middleware\nautenticar" as M
+participant "conexaoController" as C
+database "PostgreSQL\n(Prisma)" as P
+actor "Bruno\n(destinatário)" as B
+
+A -> F : clica "Conectar" no perfil do Bruno
+F -> M : POST /api/conexoes {id_destinatario} + JWT
+M -> C : solicitarConexao (usuário autenticado)
+activate C
+C -> P : busca destinatário e preferências
+P --> C : dados
+alt pedido para si mesmo
+  C --> F : 400
+else destinatário não aceita solicitações
+  C --> F : 403
+else já existe solicitação ou conexão
+  C --> F : 409
+else pedido válido
+  C -> P : INSERT conexoes (status = pendente)
+  C --> F : 201 { status: pendente }
+end
+deactivate C
+F --> A : "Solicitação enviada"
+
+B -> F : abre Conexões e clica Aceitar
+F -> M : PATCH /api/conexoes/:id {status: aceita} + JWT
+M -> C : responderConexao
+activate C
+alt quem responde não é o destinatário
+  C --> F : 403
+else solicitação já respondida
+  C --> F : 409
+else ok
+  C -> P : UPDATE status = aceita, data_resposta
+  C --> F : 200 conexão aceita
+end
+deactivate C
+F --> B : conexão aparece na lista
+@enduml
